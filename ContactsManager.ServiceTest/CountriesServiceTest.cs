@@ -1,33 +1,41 @@
-﻿using System;
+﻿using AutoFixture;
+using ContactManager.UI.Domain.Entities;
+using CountriesService;
+using Entities;
+using Entity;
+using EntityFrameworkCore.Testing.Moq;
+using Microsoft.EntityFrameworkCore;
+using Moq;
+using NuGet.Frameworks;
+using RepositoryContract;
+using ServiceContract;
+using ServiceContract.DTO;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using CountriesService;
-using NuGet.Frameworks;
-using ServiceContract;
-using ServiceContract.DTO;
-using Moq;
-using Entity;
-using ContactManager.UI.Domain.Entities;
-using Entities;
-using Microsoft.EntityFrameworkCore;
-using EntityFrameworkCore.Testing.Moq;
-using RepositoryContract;
 
 namespace CrudTest
 {
     public class CountriesServiceTest
     {
         private readonly ICountriesService _countries;
-        private readonly ICountryRepository _countryRepository;
+
+        private readonly Mock<ICountryRepository> _countriesRepositoryMock;
+        private readonly ICountryRepository _countriesRepository;
+
+        private readonly IFixture _fixture;
+
+        //constructor
         public CountriesServiceTest()
         {
-            var counrtiesInitialData = new List<Country>() { };
-            DbContextMock<ApplicationDbContext> dbContextMock=new DbContextMock<ApplicationDbContext>(new DbContextOptionsBuilder<ApplicationDbContext>().Options);//default dbcontext option create
-            ApplicationDbContext dbContext = dbContextMock.Object;
-            dbContextMock.CreateDbSetMock(temp => temp.Countries, counrtiesInitialData);
-            _countries = new CountriesServiceM(null);
+            _fixture = new Fixture();
+
+            _countriesRepositoryMock = new Mock<ICountryRepository>();
+            _countriesRepository = _countriesRepositoryMock.Object;
+
+            _countries = new CountriesServiceM(_countriesRepository);
         }
         #region AddRegion
         [Fact]

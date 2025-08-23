@@ -1,6 +1,10 @@
-﻿using CountriesService;
+﻿using ContactsManager.Core.Domain.IndentityEntities;
+using CountriesService;
 using CRUDExample.Filters.ActionFilters;
 using Entities;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Repository;
 using RepositoryContract;
@@ -37,6 +41,32 @@ namespace CRUDExample.StartupExtension
             service.AddScoped<IPersonUpdaterService, PersonUpdaterService>();
             service.AddDbContext<ApplicationDbContext>(options => {
                 options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));//scoped service
+                //Enable identity in this project
+            });
+            
+            service.AddIdentity<ApplicationUser, ApplicationRole>((options)=>{
+                options.Password.RequiredLength = 5;
+                options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequireUppercase = false;
+                options.Password.RequireLowercase = true;
+                options.Password.RequireDigit = false;
+                options.Password.RequiredUniqueChars = 3;
+
+            }).
+                AddEntityFrameworkStores<ApplicationDbContext>()
+                .AddDefaultTokenProviders()//default token provider means email otp,sms otp etc
+                .AddUserStore<UserStore<ApplicationUser, ApplicationRole, ApplicationDbContext, Guid>>()//this is for users tables
+                .AddRoleStore<RoleStore<ApplicationRole, ApplicationDbContext, Guid>>();
+
+
+            service.AddAuthorization(options =>
+            {
+                options.FallbackPolicy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();//authorization filter for all the action methods 
+
+            });
+            service.ConfigureApplicationCookie(options =>
+            {
+               options.LoginPath = "/Account/Login";
             });
             return service;
         }

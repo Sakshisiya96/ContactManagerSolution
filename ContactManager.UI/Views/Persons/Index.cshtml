@@ -1,6 +1,8 @@
 ﻿@model IEnumerable<PersonResponse>
 @{
     ViewBag.Title = "Persons";
+    ViewBag.CurrentUrl = "~/Persons/Index";
+
 }
 <form asp-controller="Persons" asp-action="Index" method="get">
     <!-- breadCrum start-->
