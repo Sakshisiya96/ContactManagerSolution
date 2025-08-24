@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace ContactManager.UI.Controllers
 {
     [AllowAnonymous]//all the action methods inside this controller are accessible without authentication
-    [Route("[controller]/[action]")]
+    //[Route("[controller]/[action]")]
     public class AccountController : Controller
     {
         private readonly UserManager<ApplicationUser> _userManager;
