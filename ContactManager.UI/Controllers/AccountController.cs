@@ -1,5 +1,6 @@
 ﻿using ContactsManager.Core.Domain.IndentityEntities;
 using ContactsManager.Core.Dto;
+using ContactsManager.Core.Enums;
 using CRUDExample.Controllers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -14,10 +15,12 @@ namespace ContactManager.UI.Controllers
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
-        public AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager)
+        private readonly RoleManager<ApplicationRole> _roleManager;
+        public AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager,RoleManager<ApplicationRole> roleManager)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _roleManager = roleManager;
         }
         [HttpGet]
         public IActionResult Register()
@@ -41,12 +44,32 @@ namespace ContactManager.UI.Controllers
                 PersonName = registerDTO.PersonName
             };
             IdentityResult result = await _userManager.CreateAsync(user,registerDTO.Password);//creating the user in Identity Database it will store the password in the hashcode
-            
-
+            //check status of radio button
+           
             if (result.Succeeded)
             {
+                //check 'Admin' role
+                if (registerDTO.UserType == ContactsManager.Core.Enums.UserTypeOptions.Admin)
+                {
+                    if(await _roleManager.FindByNameAsync(UserTypeOptions.Admin.ToString()) is null)
+                    {
+                        ApplicationRole al = new ApplicationRole() {
+                            
+                            Name = UserTypeOptions.Admin.ToString() 
+                        };
+                       await _roleManager.CreateAsync(al);
+                    }
+                    //Add the new user into User role
+                    await _userManager.AddToRoleAsync(user, UserTypeOptions.Admin.ToString());
+
+                }
+                else
+                {
+                    await _userManager.AddToRoleAsync(user, UserTypeOptions.User.ToString());
+
+                }
                 //Sign in
-                await _signInManager.SignInAsync(user,isPersistent:false);
+                await _signInManager.SignInAsync(user, isPersistent: false);
 
                 return RedirectToAction(nameof(PersonsController.Index), "Persons");
             }
