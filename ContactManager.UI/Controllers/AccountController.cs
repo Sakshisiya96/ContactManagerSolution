@@ -66,16 +66,20 @@ namespace ContactManager.UI.Controllers
             return View();
         }
         [HttpPost]
-        public async Task<IActionResult> Login(LoginDto loginDto)
+        public async Task<IActionResult> Login(LoginDto loginDto,string? ReturnUrl)
         {
             if (!ModelState.IsValid)
             {
                 ViewBag.Errors = ModelState.Values.SelectMany(v => v.Errors).Select(x => x.ErrorMessage);
                 return View(loginDto);
             }
-            var result=await _signInManager.PasswordSignInAsync(loginDto.Email, loginDto.Password, isPersistent: true,lockoutOnFailure:false);
+            var result=await _signInManager.PasswordSignInAsync(loginDto.Email, loginDto.Password, isPersistent: false,lockoutOnFailure:false);
             if (result.Succeeded)
             {
+                //if (!string.IsNullOrEmpty(ReturnUrl) && Url.IsLocalUrl(ReturnUrl))
+                //{
+                //    return LocalRedirect(ReturnUrl);
+                //}
                 return RedirectToAction(nameof(PersonsController.Index), "Persons");
             }
             ModelState.AddModelError("Login","Invalid Email or Password");
@@ -85,7 +89,19 @@ namespace ContactManager.UI.Controllers
         public async Task<IActionResult> Logout()
         {
             await _signInManager.SignOutAsync();
-            return RedirectToAction("Login", "Account");
+            return RedirectToAction(nameof(PersonsController.Index), "Persons");
+        }
+        public async Task<IActionResult> IsEmailAlreadyRegister(string email)
+        {
+            ApplicationUser user = await _userManager.FindByEmailAsync(email);
+            if (user == null)
+            {
+                return Json(true);
+            }
+            else
+            {
+                return Json(false);
+            }
         }
     }
 }

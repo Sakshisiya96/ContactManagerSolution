@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -15,6 +16,7 @@ namespace ContactsManager.Core.Dto
 
         [Required(ErrorMessage = "Email can't be empty")]
         [EmailAddress(ErrorMessage = "Email value should be valid")]
+        [Remote(action: "IsEmailAlreadyRegister", controller: "Account", ErrorMessage = "Email already in use")]
         public string Email { get; set; }
 
 
